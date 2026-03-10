@@ -74,26 +74,24 @@ else:
     if stock_data.empty:
         st.error("No data available for this ticker")
         st.stop()
+    close = stock_data["Close"]
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:,0]
+        
     ticker_data = yf.Ticker(option)
-    logo = ticker_data.info.get("logo_url", "")
-    string_logo = "<img src='%s'>" % logo
-    st.markdown(string_logo, unsafe_allow_html=True)
-    string_name = ticker_data.info["longName"]
-    st.header("**%s**" % string_name)
 
     # Bollinger Bands
-    indicator_bb = BollingerBands(stock_data["Close"])
+    indicator_bb = BollingerBands(close)
     bb = stock_data
     bb["bb_h"] = indicator_bb.bollinger_hband()
     bb["bb_l"] = indicator_bb.bollinger_lband()
     bb = bb[["Close", "bb_h", "bb_l"]]
 
-    # Moving Average Convergence Divergence
-    macd = MACD(stock_data["Close"]).macd()
+    # MACD
+    macd = MACD(close).macd()
 
-    # Resistance Strength Indicator
-    rsi = RSIIndicator(stock_data["Close"]).rsi()
-
+    # RSI
+    rsi = RSIIndicator(close).rsi()
     # Main app
 
     # Plot the prices and the bollinger bands
