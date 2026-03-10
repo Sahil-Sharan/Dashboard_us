@@ -71,6 +71,9 @@ else:
 
     # Download data
     stock_data = yf.download(option, start=start_date, end=end_date, progress=False)
+    # Flatten MultiIndex columns if present
+    if isinstance(stock_data.columns, pd.MultiIndex):
+        stock_data.columns = stock_data.columns.get_level_values(0)
     if stock_data.empty:
         st.error("No data available for this ticker")
         st.stop()
