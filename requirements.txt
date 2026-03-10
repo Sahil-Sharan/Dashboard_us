@@ -1,0 +1,6 @@
+streamlit
+pandas
+yfinance
+ta
+lxml
+html5lib
