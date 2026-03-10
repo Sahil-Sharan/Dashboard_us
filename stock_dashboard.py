@@ -12,17 +12,24 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import datetime
+import requests
 from ta.volatility import BollingerBands
 from ta.trend import MACD
 from ta.momentum import RSIIndicator
 
 
-@st.cache
+@st.cache_data
 def load_data(url: str):
-    html = pd.read_html(url, header=0)
-    df1 = html[0]
-    return df1
+    import requests
 
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    response = requests.get(url, headers=headers)
+    tables = pd.read_html(response.text)
+
+    return tables[0]
 
 df = load_data("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")
 sector = df.groupby("GICS Sector")
@@ -64,8 +71,12 @@ else:
 
     # Download data
     stock_data = yf.download(option, start=start_date, end=end_date, progress=False)
+    if stock_data.empty:
+        st.error("No data available for this ticker")
+        st.stop()
     ticker_data = yf.Ticker(option)
-    string_logo = "<img src=%s>" % ticker_data.info["logo_url"]
+    logo = ticker_data.info.get("logo_url", "")
+    string_logo = "<img src='%s'>" % logo
     st.markdown(string_logo, unsafe_allow_html=True)
     string_name = ticker_data.info["longName"]
     st.header("**%s**" % string_name)
